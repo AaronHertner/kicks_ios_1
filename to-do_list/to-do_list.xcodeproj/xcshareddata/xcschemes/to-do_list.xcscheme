@@ -17,7 +17,7 @@
                BlueprintIdentifier = "CEFC7ABB24D0B8CD007B4A70"
                BuildableName = "to-do_list.app"
                BlueprintName = "to-do_list"
-               ReferencedContainer = "container:kicks_ios_1.xcodeproj">
+               ReferencedContainer = "container:to-do_list.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -35,7 +35,7 @@
                BlueprintIdentifier = "CE770B0E24F0DF300038E6EE"
                BuildableName = "to-do_listTests.xctest"
                BlueprintName = "to-do_listTests"
-               ReferencedContainer = "container:kicks_ios_1.xcodeproj">
+               ReferencedContainer = "container:to-do_list.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -57,7 +57,7 @@
             BlueprintIdentifier = "CEFC7ABB24D0B8CD007B4A70"
             BuildableName = "to-do_list.app"
             BlueprintName = "to-do_list"
-            ReferencedContainer = "container:kicks_ios_1.xcodeproj">
+            ReferencedContainer = "container:to-do_list.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -74,7 +74,7 @@
             BlueprintIdentifier = "CEFC7ABB24D0B8CD007B4A70"
             BuildableName = "to-do_list.app"
             BlueprintName = "to-do_list"
-            ReferencedContainer = "container:kicks_ios_1.xcodeproj">
+            ReferencedContainer = "container:to-do_list.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

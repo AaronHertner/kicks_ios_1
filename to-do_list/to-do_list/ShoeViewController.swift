@@ -7,13 +7,67 @@
 //
 
 import UIKit
+import os.log
 
 class ShoeViewController: UIViewController, UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
     //MARK: Outlets
     @IBOutlet weak var shoeTextField: UITextField!  //user input
     @IBOutlet weak var imageView: UIImageView!      //image view
-    @IBOutlet weak var ratingControl: UIStackView!  //custom control
+    @IBOutlet weak var ratingControl: CustomControl!  //rating
+    @IBOutlet weak var saveButton: UIBarButtonItem! //save btn
+    @IBOutlet weak var cancelButton: UIBarButtonItem!   //cancel btn
+    
+    
+    /*
+     This value is either passed by ShoeTableViewController
+     via prepare(for:sender)
+     or constructed as part of adding a new meal
+     */
+    var shoe : Shoe?
+    
+    //MARK: Navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
+        
+        //check that the save button was pressed
+        guard let button = sender as? UIBarButtonItem, button === saveButton else{
+            os_log("Save button not pressed, cancelling", log: OSLog.default,type: .debug)
+            return
+        }
+        
+        let name = shoeTextField.text ?? ""
+        let photo = imageView.image
+        let rating = ratingControl.rating
+        
+        //prepare shoe for sending to table view
+        shoe = Shoe.init(name: name, rating: rating, photo: photo)
+    }
+    
+    @IBAction func cancelButton(_ sender: UIBarButtonItem) {
+        let presentingFromAdd = presentingViewController is UINavigationController
+        
+        /*
+         depending on how the page was presented
+         modally or pushed
+         the page needs to receed accordingly
+         */
+        
+        //scene arrived from add button
+        if presentingFromAdd {
+            dismiss(animated: true, completion: nil)
+        }
+        
+        //removes scene from navigation stack
+        else if let owningNavigationController = navigationController{
+            owningNavigationController.popViewController(animated: true)
+        }
+        
+        else{
+            fatalError("ShoeViewController is not inside a navigation controller")
+        }
+    }
+    
     
     //MARK: Actions
     //responds to user tap on image view
@@ -38,9 +92,18 @@ class ShoeViewController: UIViewController, UITextFieldDelegate, UIImagePickerCo
         return true
     }
     
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        saveButton.isEnabled = false
+    }
+    
     //called when first responder resigns
     //handle user input here if needed
     func textFieldDidEndEditing(_ textField: UITextField) {
+        if shoeTextField.text != ""{
+            saveButton.isEnabled = true
+        }
+        
+        navigationItem.title = shoeTextField.text
     }
     
     //MARK: UIImagePickerControllerDelegate
@@ -72,6 +135,15 @@ class ShoeViewController: UIViewController, UITextFieldDelegate, UIImagePickerCo
         
         //assign this view controller as delegate
         shoeTextField.delegate = self
+        
+        //populate ui with shoe property
+        //if shoe property is non nil then views are updated
+        if let shoe = shoe{
+            navigationItem.title = shoe.name
+            shoeTextField.text = shoe.name
+            imageView.image = shoe.photo
+            ratingControl.rating = shoe.rating
+        }
     }
 }
 

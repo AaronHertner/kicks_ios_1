@@ -7,11 +7,65 @@
 //
 
 import UIKit
+import os.log
 
 class ShoeTableViewController: UITableViewController {
     
     //MARK: Properties
     var shoes = [Shoe]()
+    
+    //MARK: Actions
+    @IBAction func unwindToShoeList(sender: UIStoryboardSegue){
+        
+        if let sourceViewController = sender.source as? ShoeViewController, let shoe = sourceViewController.shoe{
+            
+            //updates existing entry
+            if let selectedIndexPath = tableView.indexPathForSelectedRow{
+                shoes[selectedIndexPath.row] = shoe
+                tableView.reloadData()
+            }
+                
+            //adds new entry
+            else{
+                let indexPath = IndexPath(row: shoes.count, section: 0)
+                shoes.append(shoe)
+                tableView.insertRows(at: [indexPath], with: .automatic)
+            }
+            saveShoes()
+        }
+    }
+    
+    //MARK: Navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        super.prepare(for: segue, sender: sender)
+        
+        switch (segue.identifier ?? "") {
+        
+        //pending segue is to add new shoe
+        case "AddShoeItem":
+            os_log("Adding a new item", log: OSLog.default, type: .debug)
+        
+        //pending segue is to edit shoe
+        case "EditShoeDetails":
+            
+            //segue destination
+            let shoeDetailViewController = segue.destination as? ShoeViewController
+            
+            //selected cell
+            let selectedCell = sender as? ShoeTableViewCell
+            
+            //get cell position
+            let indexPath = tableView.indexPath(for: selectedCell!)
+            
+            //get shoe data
+            let selectedShoe = shoes[indexPath!.row]
+            
+            //assign the detail viewer shoe info
+            shoeDetailViewController?.shoe = selectedShoe
+        default:
+            fatalError("Unexpected segue identifier; \(segue.identifier!)")
+        }
+    }
     
     //MARK: Private Functions
     private func loadSampleShoes(){
@@ -39,8 +93,26 @@ class ShoeTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //load sample shoe data
-        loadSampleShoes()
+        navigationItem.leftBarButtonItem = editButtonItem
+        
+        if let savedShoes = loadShoes() {
+            shoes += savedShoes
+        }else{
+            loadSampleShoes()
+        }
+    }
+    
+    private func saveShoes(){
+        do{
+            let data = try NSKeyedArchiver.archivedData(withRootObject: shoes, requiringSecureCoding: false)
+            try data.write(to: Shoe.ArchiveURL)
+        }catch{
+            os_log("Could not save data", log: OSLog.default, type: .debug)
+        }
+    }
+    
+    private func loadShoes() -> [Shoe]? {
+        return NSKeyedUnarchiver.unarchiveObject(withFile: Shoe.ArchiveURL.path) as? [Shoe]
     }
 
     // MARK: - Table view data source
@@ -48,9 +120,24 @@ class ShoeTableViewController: UITableViewController {
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
-
+    
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        
+        //editing style is delete
+        if editingStyle == .delete {
+            shoes.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+            saveShoes()
+        }
+    }
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return shoes.count
+    }
+    
+    //allows editing
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
